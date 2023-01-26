@@ -1,16 +1,25 @@
 from torchvision import datasets, transforms
 from base import BaseDataLoader
 
+from datasets import NLCityFlowDataset, build_dataset
+from transforms import build_transforms
+      
+        
+class NLCityFlowDataLoader(BaseDataLoader):
+    """NL CityFlow data loading demo using BaseDataLoader
 
-class MnistDataLoader(BaseDataLoader):
+    Args:
+        BaseDataLoader (_type_): _description_
     """
-    MNIST data loading demo using BaseDataLoader
-    """
-    def __init__(self, data_dir, batch_size, shuffle=True, validation_split=0.0, num_workers=1, training=True):
-        trsfm = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,))
-        ])
-        self.data_dir = data_dir
-        self.dataset = datasets.MNIST(self.data_dir, train=training, download=True, transform=trsfm)
-        super().__init__(self.dataset, batch_size, shuffle, validation_split, num_workers)
+    def __init__(self, cfg, training, collate_fn=None):
+        self.cfg = cfg
+        self.training = training
+        self.transforms = build_transforms(self.cfg, self.training)
+        self.dataset = build_dataset(cfg, self.transforms, self.training)
+        self.batch_size = cfg['batch_size']
+        self.shuffle = True if self.training else False
+        self.validation_split = 0.0
+        self.num_workers = cfg['num_workers']
+        self.collate_fn = collate_fn
+        
+        super().__init__(self.dataset, self.batch_size, self.shuffle, self.validation_split, self.num_workers, self.collate_fn)
